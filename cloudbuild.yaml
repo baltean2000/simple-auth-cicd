@@ -1,0 +1,50 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Docker image'
+    args:
+      - 'build'
+      - '-t'
+      - 'europe-west1-docker.pkg.dev/$PROJECT_ID/lab4-docker/simple-auth-web:$BUILD_ID'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Push Docker image'
+    args:
+      - 'push'
+      - 'europe-west1-docker.pkg.dev/$PROJECT_ID/lab4-docker/simple-auth-web:$BUILD_ID'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Update image in Kubernetes manifest'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -i "s|image: .*simple-auth-web.*|image: europe-west1-docker.pkg.dev/$PROJECT_ID/lab4-docker/simple-auth-web:$BUILD_ID|g" k8s/web-deployment.yaml
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'Deploy Kubernetes manifests'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west1-b'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=lab4-cluster'
+    args:
+      - 'apply'
+      - '-f'
+      - 'k8s/'
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    id: 'Check web rollout'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west1-b'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=lab4-cluster'
+    args:
+      - 'rollout'
+      - 'status'
+      - 'deployment/simple-auth-web'
+      - '-n'
+      - 'lab3-auth-app'
+
+images:
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/lab4-docker/simple-auth-web:$BUILD_ID'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

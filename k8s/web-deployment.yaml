@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: simple-auth-web
-          image: simple-auth-web:v1
-          imagePullPolicy: IfNotPresent
+          image: europe-west1-docker.pkg.dev/lab4-cicd-simple-auth/lab4-docker/simple-auth-web:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80

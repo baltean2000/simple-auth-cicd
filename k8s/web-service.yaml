@@ -4,10 +4,9 @@ metadata:
   name: simple-auth-web-service
   namespace: lab3-auth-app
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: simple-auth-web
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30080
